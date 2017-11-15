@@ -17,6 +17,10 @@ E.g: -g 3 g1 g2 g3
 
 --verbose -> verbose
 
+-tl/--timelimit -> time limit in ms
+
+-dt/--timestep -> timestep in double. Suggested/Default: 0.015
+
 If the simulation gui is slow, crank up the speed by increasing fps and frameskip. You might want this if your player is so fast that the gui speed is limited by the refresh rate. Set frame skip to like ~ 5 made the gui ~5x faster for the random player...
 
 The makefile gives you sample parameters. You can use the makefile for convenience if you want to. Makefile commands:
@@ -37,6 +41,6 @@ make verbose
 
 -> runs on verbose mode
 
-There are some useful vector functions in Point.java. Simulator.getSpeed is public so you can use that too. Distance moved is calculated as (x,y) + speed-vector * dt.
+There are some useful vector functions in Point.java. Simulator.getSpeed is public so you can use that too. The change in coordinates for one move is calculated as (speed) * (direction_vector) * dt
 
 Good luck!

@@ -20,11 +20,10 @@ public class Simulator {
   private static int t = -1;
   private static long seed=-1;
   private static int fps;
+  private static long total_time = 1000;//ms
   private static long gui_refresh;
   private static boolean gui_enabled, log;
   private static double DT = 0.015; // test?
-  private static long play_timeout = 100;
-  private static long init_timeout = 100;
 
   public static void main(String[] args) throws Exception {
       JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -117,30 +116,48 @@ public class Simulator {
         }
       }
     }
-
+    long[] time_remaining = new long[numgroups];
+    for(int i = 0 ; i < numgroups; ++ i) {
+      time_remaining[i] = total_time;
+    }
     final Point wind_direction = Point.getRandomPoint(gen);
     List<Point> player_locations = new ArrayList<Point>();
     List<Point> initial_player_locations = new ArrayList<Point>();
     List<Point> player_locations_u = Collections.unmodifiableList(player_locations);
 
     for(int i = 0 ; i < numgroups; ++ i) {
+      if(time_remaining[i] <= 0) {
+        initial_player_locations.add(new Point(0,0));
+        player_locations.add(new Point(0,0));
+        continue;
+      }
       if(log) System.out.println("choosing starting location of group: " + groups[i]);
       try {
         final int ii =i;
         Point p = timers[i].call(
           () -> players[ii].chooseStartingLocation(
             wind_direction, 
-            gen.nextLong()
+            gen.nextLong(),
+            t
           ), 
-          init_timeout
+          time_remaining[ii]
         );
+        time_remaining[i] -= timers[i].getElapsedTime();
         player_locations.add(p);
         initial_player_locations.add(p);
+      } catch(TimeoutException ex) {
+        if(log) {
+          System.out.println("Player "+groups[i] + " timed out" );
+        }
+        time_remaining[i] = 0;
+        ex.printStackTrace();
+        initial_player_locations.add(new Point(0,0));
+        player_locations.add(new Point(0,0));
+
       } catch (Exception ex) {
         System.err.println(
           "Exception calling choose starting location of player: " + groups[i]
         );
-        ex.printStackTrace();
         // the show must go on
         initial_player_locations.add(new Point(0,0));
         player_locations.add(new Point(0,0));
@@ -165,13 +182,21 @@ public class Simulator {
     }
     List<Point> target_locations_u = Collections.unmodifiableList(target_locations);
     for(int i = 0 ; i < numgroups; ++ i) {
+      if(time_remaining[i] <= 0) continue;
       if(log) System.out.println("Initializing group: " + groups[i]);
       try {
         final int ii =i;
         timers[i].call((Callable<Void>) () -> {
           players[ii].init(player_locations_u, target_locations_u, ii);
           return null;
-        }, init_timeout);
+        }, time_remaining[i]);
+        time_remaining[i] -= timers[i].getElapsedTime();
+      } catch(TimeoutException ex) {
+        if(log) {
+          System.out.println("Player "+groups[i] + " timed out" );
+        }
+
+        time_remaining[i] = 0;
       } catch (Exception ex) {
         System.err.println("Exception calling init of player: " + groups[i]);
         ex.printStackTrace();
@@ -196,13 +221,19 @@ public class Simulator {
       ++ turn_counter;
       List<Point> newLocations = new ArrayList<>();
       for(int i = 0 ; i < numgroups; ++i) {
+        if(time_remaining[i] <= 0) {
+          newLocations.add(player_locations.get(i));
+          continue;
+        }
         final int ii = i;
         // if(log) System.out.println("Moving group: " + groups[i]);
         try {
           Point newDirection = timers[i].call(
-            () -> players[ii].move(player_locations_u, ii, DT), 
-            play_timeout
+            () -> players[ii].move(player_locations_u, ii, DT, time_remaining[ii]), 
+            time_remaining[i]
           );
+
+          time_remaining[i] -= timers[i].getElapsedTime();
           if(newDirection.x == 0 && newDirection.y == 0) {
             newLocations.add(player_locations.get(i));
             continue;
@@ -226,8 +257,15 @@ public class Simulator {
           //  player_locations.get(i).y+ ") to (" +newLocations.get(i).x +
           // ", "+newLocations.get(i).y+")");
 
+        } catch(TimeoutException ex) {
+          if(log) {
+            System.out.println("Player " + i + ": "+groups[i] + " timed out" );
+          }
+          ex.printStackTrace();
+          newLocations.add(player_locations.get(i));
+          time_remaining[i] = 0;
         } catch (Exception ex) {
-          System.err.println("timeout: "+groups[ii]);
+          System.err.println("Exception calling move of "+groups[ii]);
           ex.printStackTrace();
           newLocations.add(player_locations.get(i));
         }
@@ -286,57 +324,81 @@ public class Simulator {
         }
       }
 
+      boolean finished = false, all_timed_out = true;
+      for(int i = 0 ; i < numgroups; ++ i) {
+        if(time_remaining[i] > 0) all_timed_out = false;
+        if(visited_set.get(i).size() == t &&
+          checkCrossedInterpolation(
+              initial_player_locations.get(i), 
+              player_locations.get(i), 
+              newLocations.get(i)
+          )
+        ) {
+          finished = true;
+        }
+      }
+      if(all_timed_out) {
+        finished = true;
+      }
+
+
       player_locations.clear();
       for(int i = 0 ; i < numgroups; ++ i) {
         player_locations.add(newLocations.get(i));
       }
       newLocations.clear();
       for(int i = 0 ; i < numgroups ; ++ i) {
+        if(time_remaining[i] <= 0) continue;
         try {
           final int ii =i;
           timers[i].call((Callable<Void>) () -> {
             players[ii].onMoveFinished(player_locations_u, visited_set_u);
             return null;
-          }, play_timeout);
+          }, time_remaining[i]);
+          time_remaining[i] -= timers[i].getElapsedTime();
+
+        } catch(TimeoutException ex) {
+          if(log) {
+            System.out.println("Player " + i + ": "+groups[i] + " timed out" );
+          }
+          ex.printStackTrace();
+          time_remaining[i] = 0;
         } catch (Exception ex) {
           System.err.println("Exception calling onMoveFinished of player: " + groups[i]);
           ex.printStackTrace();
         }
       }
-      boolean finished = false;
-      for(int i = 0 ; i < numgroups; ++ i) {
-        if(visited_set.get(i).size() == t && 
-          Point.getDistance(
-            player_locations.get(i), 
-            initial_player_locations.get(i)
-          ) < 0.01
-        ) {
-          if(gui_enabled)
-            gui(
-                  server,
-                  state(
-                          1,
-                          groups,
-                          scores,
-                          target_locations,
-                          player_locations,
-                          initial_player_locations,
-                          wind_direction,
-                          gui_refresh
-                  )
-            );
-          
-          if(log) {
-            for(int j = 0 ; j < numgroups; ++ j) {
-              System.out.println(groups[j] + " scored " + scores[j]);
-            }
-          } 
-          
-          if(log) System.out.println("Ended!");
-          finished = true;
-          if(gui_enabled) for(;;);
+      // for(int i =0 ; i < numgroups; ++ i) {
+      //   System.out.println("time left: " + time_remaining[i] + " for "+ groups[i]);
+      // }
+      if (finished) {
+        if (gui_enabled) {
+          gui(
+            server,
+            state(
+              1,
+              groups,
+              scores,
+              target_locations,
+              player_locations,
+              initial_player_locations,
+              wind_direction,
+              gui_refresh
+            )
+          );
         }
+
+        if(log) {
+          for(int j = 0 ; j < numgroups; ++ j) {
+            System.out.println(groups[j] + " scored " + scores[j]);
+          }
+        } 
+        
+        if(log) System.out.println("Ended!");
+        finished = true;
+        if(gui_enabled) for(;;);
       }
+      
       if(gui_enabled && turn_counter % FRAME_SKIP == 0)
         gui(
           server, 
@@ -417,6 +479,16 @@ public class Simulator {
           throw new IllegalArgumentException("Missing number of targets");
         }
         t = Integer.parseInt(args[++i]);
+      } else if (args[i].equals("-tl") || args[i].equals("--timelimit")) {
+        if (i+1 >= args.length) {
+          throw new IllegalArgumentException("Missing time limit");
+        }
+        total_time = Long.parseLong(args[++i]);
+      } else if (args[i].equals("-dt") || args[i].equals("--timestep")) {
+        if (i+1 >= args.length) {
+          throw new IllegalArgumentException("Missing time step");
+        }
+        DT = Double.parseDouble(args[++i]);
       } else if (args[i].equals("-fs") || args[i].equals("--frameskip")) {
         if (i+1 >= args.length) {
           throw new IllegalArgumentException("Missing frame skip");

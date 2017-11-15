@@ -13,7 +13,7 @@ public class Player extends sail.sim.Player {
     Point initial;
 
     @Override
-    public Point chooseStartingLocation(Point wind_direction, Long seed) {
+    public Point chooseStartingLocation(Point wind_direction, Long seed, int t) {
         // you don't have to use seed unless you want it to 
         // be deterministic (wrt input randomness)
         gen = new Random(seed);
@@ -29,8 +29,13 @@ public class Player extends sail.sim.Player {
     }
 
     @Override
-    public Point move(List<Point> group_locations, int id, double dt) {
-        
+    public Point move(List<Point> group_locations, int id, double dt, long time_remaining_ms) {
+        // testing timeouts... 
+        // try {
+        //     TimeUnit.MILLISECONDS.sleep(1);
+        // } catch(Exception ex) {
+        //     ;
+        // }
         // just for first turn
         if(visited_set == null) {
             return Point.getDirection(group_locations.get(id), targets.get(0));
@@ -39,7 +44,7 @@ public class Player extends sail.sim.Player {
             //this is if finished visiting all
             return Point.getDirection(group_locations.get(id), initial);
         } else { 
-            //pick next new visited
+            //pick a target
             int next = 0;
             for(; visited_set.get(id).contains(next); ++next);
             return Point.getDirection(

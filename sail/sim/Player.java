@@ -13,7 +13,7 @@ abstract public class Player{
     *   Called at the start
     * @param wind_direction is a unit vector in the direction of wind
     */
-    public abstract Point chooseStartingLocation(Point wind_direction, Long seed);
+    public abstract Point chooseStartingLocation(Point wind_direction, Long seed, int t);
 
     /**
     * Called after everyone has chosen their initial positions
@@ -22,8 +22,9 @@ abstract public class Player{
     
     /**
     * Called at the start of every turn, returns a unit vector in the direction you want to move to
+    * 
     */
-    public abstract Point move(List<Point> group_locations, int id, double dt);
+    public abstract Point move(List<Point> group_locations, int id, double dt, long time_remaining_ms);
 
     /**
     * Called after everyone has moved

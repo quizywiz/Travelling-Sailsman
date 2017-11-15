@@ -68,29 +68,75 @@ function draw_dots(min_x, min_y, max_x, max_y, num, xcoords, ycoords, numcols, c
             radius, 0, 2 * Math.PI);
         ctx.fillStyle = colors[i%numcols];
         ctx.fill();
-        if(showID) {
-            ctx.font = "14px Arial";
-            ctx.textAlign = "left";
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "black";
-            ctx.strokeText(i,        min_x + (max_x - min_x) * xcoords[i]/10 + 1,min_y + (max_y - min_y) * ycoords[i]/10- 1);
-        }
+
+        ctx.font = "14px Arial";
+        ctx.textAlign = "left";
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "black";
+        ctx.strokeText(i,        min_x + (max_x - min_x) * xcoords[i]/10 + 1,min_y + (max_y - min_y) * ycoords[i]/10- 1);
+        
     }
 }
 
-function draw_landmarks(min_x, min_y, max_x, max_y, rows, cols, num, xcoords, ycoords, color) {
+function draw_boat(min_x, min_y, max_x, max_y, num, xcoords, ycoords, numcols, colors) {
     var ctx = document.getElementById('canvas').getContext('2d');
-    var width = (max_x - min_x) / (cols);
-    var height = (max_y - min_y) / rows;
     for(var i = 0 ; i < num ; ++ i) {
-        var offset_x = min_x + width*xcoords[i];
-        var offset_y = min_y + height*ycoords[i];
+        ox = min_x + (max_x - min_x) * xcoords[i]/10;
+        oy = min_y + (max_y - min_y) * ycoords[i]/10;
+        w = 12
+        h = 12;
+        
         ctx.beginPath();
-        ctx.moveTo(offset_x + width/2, offset_y + height/4);
-        ctx.lineTo(offset_x + width/4, offset_y + 3*height/4);
-        ctx.lineTo(offset_x + 3*width/4, offset_y + 3* height/4);
+        ctx.moveTo(ox - w/2, oy + h/4);
+        ctx.lineTo(ox - w/4, oy + h/2);
+        ctx.lineTo(ox + w/4, oy + h/2);
+        ctx.lineTo(ox + w/2, oy + h/4);
         ctx.closePath();
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = colors[i%numcols];
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(ox, oy + h/4);
+        ctx.lineTo(ox, oy - h/4);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(ox,oy - h/4);
+        ctx.lineTo(ox, oy - 3*h/4);
+        ctx.lineTo(ox + w/2, oy - h/4);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fillStyle = colors[i % numcols];
+        ctx.fill();
+
+        ctx.font = "14px Arial";
+        ctx.textAlign = "left";
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "black";
+        ctx.strokeText(i,        min_x + (max_x - min_x) * xcoords[i]/10 + 5,min_y + (max_y - min_y) * ycoords[i]/10- 5);
+        
+    }
+}
+
+function draw_landmarks(min_x, min_y, max_x, max_y, num, xcoords, ycoords, color) {
+    var ctx = document.getElementById('canvas').getContext('2d');
+    for(var i = 0 ; i < num ; ++ i) {
+        ctx.beginPath();
+        offset_x = min_x + (max_x - min_x) * xcoords[i]/10;
+        offset_y = min_y + (max_y - min_y) * ycoords[i]/10;
+        width = 10;
+        height = 10;
+        ctx.moveTo(offset_x - width/2, offset_y - height/2);
+        ctx.lineTo(offset_x + width/2, offset_y - height/2);
+        ctx.lineTo(offset_x + width/2, offset_y + height/2);
+        ctx.lineTo(offset_x - width/2, offset_y + height/2);
+
+        ctx.closePath();
+        ctx.lineWidth = 2;
         ctx.strokeStyle = "black";
         ctx.stroke();
         ctx.fillStyle=color;
@@ -279,9 +325,9 @@ function process(data)
     // draw for 1st player
     var colors = ["orange",  "purple", "green", "darkblue", "yellow","lightseagreen"];
 
-    draw_dots(minx, miny, maxx, maxy, t, tx, ty, 1, ["red"], false);
+    draw_landmarks(minx, miny, maxx, maxy, t, tx, ty, "red");
     draw_dots(minx, miny, maxx, maxy, n, initplayerx, initplayery, 1, ["black"], true);
-    draw_dots(minx, miny, maxx, maxy, n, playerx, playery, 6, colors, false);
+    draw_boat(minx, miny, maxx, maxy, n, playerx, playery, 6, colors);
     draw_side ( 10,  40,  190, 690, n, groups, colors, scores, windx, windy);
     //draw_outpost(250, 50, 850, 650 , n+2, n+2);
     //draw_shape(250,  50,  850, 650, 50, 50, buildings, cuts, colors, types, highlight == 0);

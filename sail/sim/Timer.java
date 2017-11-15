@@ -9,6 +9,7 @@ class Timer extends Thread {
 	private Callable <?> task = null;
 	private Exception error = null;
 	private Object result = null;
+	private long startTime, endTime;
 	private volatile boolean exit = false;
 	public <T> T call(Callable <T> task, long timeout) throws Exception
 	{
@@ -19,6 +20,7 @@ class Timer extends Thread {
 		this.task = task;
 		synchronized (this) {
 			start = true;
+			this.startTime = System.currentTimeMillis();
 			notify();
 		}
 		synchronized (this) {
@@ -53,9 +55,14 @@ class Timer extends Thread {
 				error = e;
 			}
 			synchronized (this) {
+				this.endTime = System.currentTimeMillis();
 				finished = true;
 				notify();
 			}
 		}
 	}
+	public long getElapsedTime() {
+		// System.out.println(endTime - startTime);
+        return endTime - startTime;
+    }
 }

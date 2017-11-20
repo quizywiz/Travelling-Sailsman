@@ -57,7 +57,7 @@ public class Simulator {
   // move fasssstt
   public static double getSpeed(Point p, Point wind_direction) {
     if(Point.getNorm(p)==0) return 0;
-    double angle = Point.angleBetweenVectors(p, wind_direction);
+    double angle = Point.angleBetweenVectors(p, wind_direction) + Math.PI;
     double x = 2.5 * Math.cos(angle) - 0.5;
     double y = 5 * Math.sin(angle);
     return Math.sqrt((x)*(x) + (y)*(y));

@@ -1,7 +1,7 @@
 g=6 default1 default1 default1 default1 default1 default1
 fps=80
-t=5
-frameskip=1
+t=20
+frameskip=4
 S=10
 timelimit = 1000
 timestep = 0.015

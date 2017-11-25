@@ -73,7 +73,7 @@ function draw_dots(min_x, min_y, max_x, max_y, num, xcoords, ycoords, numcols, c
         ctx.textAlign = "left";
         ctx.lineWidth = 1;
         ctx.strokeStyle = "black";
-        ctx.strokeText(i,        min_x + (max_x - min_x) * xcoords[i]/10 + 1,min_y + (max_y - min_y) * ycoords[i]/10- 1);
+        ctx.strokeText(i+1,        min_x + (max_x - min_x) * xcoords[i]/10 + 1,min_y + (max_y - min_y) * ycoords[i]/10- 1);
         
     }
 }
@@ -117,7 +117,7 @@ function draw_boat(min_x, min_y, max_x, max_y, num, xcoords, ycoords, numcols, c
         ctx.textAlign = "left";
         ctx.lineWidth = 1;
         ctx.strokeStyle = "black";
-        ctx.strokeText(i,        min_x + (max_x - min_x) * xcoords[i]/10 + 5,min_y + (max_y - min_y) * ycoords[i]/10- 5);
+        ctx.strokeText(i+1,        min_x + (max_x - min_x) * xcoords[i]/10 + 5,min_y + (max_y - min_y) * ycoords[i]/10- 5);
         
     }
 }
@@ -323,7 +323,7 @@ function process(data)
     var maxy = 650;
     draw_grid(300, 50, 900, 650,1, 1, "black");
     // draw for 1st player
-    var colors = ["orange",  "purple", "green", "darkblue", "yellow","lightseagreen"];
+    var colors = ["orange",  "purple", "green", "darkblue", "black","lightseagreen"];
 
     draw_landmarks(minx, miny, maxx, maxy, t, tx, ty, "red");
     draw_dots(minx, miny, maxx, maxy, n, initplayerx, initplayery, 1, ["black"], true);

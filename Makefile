@@ -1,10 +1,10 @@
 g=7 g1 g2 g3 g4 g5 g6 default1
-fps=80
-t=100
-frameskip=5
+fps=50
+t=50
+frameskip=1
 S=10
-timelimit = 1000
-timestep = 0.0025
+timelimit = 5000
+timestep = 0.015
 all: compile
 
 compile:

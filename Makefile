@@ -1,10 +1,10 @@
-g=7 g1 g2 g3 g4 g5 g6 default1
-fps=50
-t=50
-frameskip=1
+g=6 g1 g2 g3 g4 g5 g6
+fps=80
+t=5
+frameskip=5
 S=10
-timelimit = 5000
-timestep = 0.015
+timelimit = 1000
+timestep = 0.004
 all: compile
 
 compile:
@@ -18,3 +18,6 @@ run:
 
 verbose:
 	java sail.sim.Simulator -g ${g}  -t ${t} --verbose -tl ${timelimit} -dt ${timestep}
+
+tournament:
+	java sail.sim.Simulator -g ${g} -t ${t} -tl ${timelimit} -dt ${timestep} --tournament

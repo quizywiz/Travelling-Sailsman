@@ -18,6 +18,7 @@ public class Player extends sail.sim.Player {
         // be deterministic (wrt input randomness)
         gen = new Random(seed);
         initial = new Point(gen.nextDouble()*10, gen.nextDouble()*10);
+        // initial = new Point(5,5);
         double speed = Simulator.getSpeed(initial, wind_direction);
         return initial;
     }
@@ -30,6 +31,11 @@ public class Player extends sail.sim.Player {
 
     @Override
     public Point move(List<Point> group_locations, int id, double dt, long time_remaining_ms) {
+        // test go out of bounds...
+        // if(true) {
+        // System.out.println(group_locations.get(0).x + " " +group_locations.get(0).y);
+        //     return new Point (0,1);
+        // }
         // testing timeouts... 
         // try {
         //     TimeUnit.MILLISECONDS.sleep(1);

@@ -1,6 +1,6 @@
 g=6 g1 g2 g3 g4 g5 g6
 fps=80
-t=500
+t=5
 frameskip=5
 S=10
 timelimit = 50000
